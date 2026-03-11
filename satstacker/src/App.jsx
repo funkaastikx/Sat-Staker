@@ -487,17 +487,18 @@ export default function SatTracker() {
   const [fetchingPrice, setFetchingPrice]             = useState(false);
   const [stackerCount, setStackerCount]               = useState(1);
 
-  // ── Auth state listener ────────────────────────────────────────────────────
+  // ── Auth state listener + stacker count ──────────────────────────────────
   useEffect(() => {
     const unsub = onAuthChange(async (user) => {
       if (user) {
         setGoogleUser(user);
         const data = await loadUserData(user.uid);
+
+        // ── Restore user data ──
         if (data) {
           if (data.entries) setEntries(data.entries);
           if (data.goal)    setGoal(data.goal);
           if (data.goalCompletedDismissed) setGoalCompletedDismissed(true);
-          // FIX: Only show profile modal if no profile saved yet
           if (data.profile && data.profile.username) {
             setProfile(data.profile);
             setAuthStep("idle");
@@ -507,6 +508,23 @@ export default function SatTracker() {
         } else {
           setAuthStep("profile");
         }
+
+        // ── Stacker count — increment only once per unique Google account ──
+        try {
+          const alreadyCounted = data && data._counted === true;
+          const meta = await loadUserData("___meta___");
+          const currentCount = (meta && typeof meta.count === "number") ? meta.count : 0;
+
+          if (!alreadyCounted) {
+            const newCount = currentCount + 1;
+            await saveUserData("___meta___", { count: newCount });
+            await saveUserData(user.uid, { _counted: true });
+            setStackerCount(newCount);
+          } else {
+            setStackerCount(currentCount);
+          }
+        } catch {}
+
       } else {
         setGoogleUser(null); setProfile(null); setEntries([]); setGoal(DEFAULT_GOAL);
         setAuthStep("google");
@@ -515,27 +533,6 @@ export default function SatTracker() {
     });
     return () => unsub();
   }, []);
-
-  // ── Global stacker count — reads real count from Firestore ─────────────────
-  // FIX: Save a presence doc and read total count from a shared counter doc
-  useEffect(() => {
-    if (!googleUser) return;
-    (async () => {
-      try {
-        // Mark this user as active in their own doc
-        await saveUserData(googleUser.uid, { _active: true, _lastSeen: Date.now() });
-        // Load the shared counter doc (stored at uid "___meta___/stackerCount")
-        const meta = await loadUserData("___meta___");
-        if (meta && meta.count && typeof meta.count === "number") {
-          setStackerCount(meta.count);
-        } else {
-          // First user ever — initialise counter
-          await saveUserData("___meta___", { count: 1 });
-          setStackerCount(1);
-        }
-      } catch {}
-    })();
-  }, [googleUser]);
 
   // ── BTC price ─────────────────────────────────────────────────────────────
   const fetchPrice = useCallback(async () => {
@@ -574,13 +571,6 @@ export default function SatTracker() {
     setProfile(p);
     if (googleUser) {
       await saveUserData(googleUser.uid, { profile: p });
-      // FIX: When a new user saves profile for first time, increment shared counter
-      try {
-        const meta = await loadUserData("___meta___");
-        const currentCount = (meta && meta.count) ? meta.count : 0;
-        await saveUserData("___meta___", { count: currentCount + 1 });
-        setStackerCount(currentCount + 1);
-      } catch {}
     }
     setAuthStep("idle");
     setShowProfileModal(false);
