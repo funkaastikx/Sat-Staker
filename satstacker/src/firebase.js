@@ -30,17 +30,25 @@ export const loadUserData = async (uid) => {
 
 export const onAuthChange = (callback) => onAuthStateChanged(auth, callback);
 
-// Atomically increment the global stacker count by 1
-// Uses Firestore's server-side increment so concurrent logins never clash
-export const incrementStackerCount = async () => {
+// Only increments if this Google account has never signed in before
+export const incrementStackerCount = async (uid) => {
+  const userRef = doc(db, "users", uid);
+  const userSnap = await getDoc(userRef);
+
+  if (!userSnap.exists()) {
+    const metaRef = doc(db, "users", "___meta___");
+    const metaSnap = await getDoc(metaRef);
+    if (metaSnap.exists()) {
+      await updateDoc(metaRef, { count: increment(1) });
+    } else {
+      await setDoc(metaRef, { count: 1 });
+    }
+  }
+};
+
+// Fetches the current stacker count without incrementing
+export const getStackerCount = async () => {
   const metaRef = doc(db, "users", "___meta___");
   const snap = await getDoc(metaRef);
-  if (snap.exists()) {
-    await updateDoc(metaRef, { count: increment(1) });
-  } else {
-    await setDoc(metaRef, { count: 1 });
-  }
-  // Return the new count
-  const updated = await getDoc(metaRef);
-  return updated.data().count;
+  return snap.exists() ? snap.data().count : 1;
 };
