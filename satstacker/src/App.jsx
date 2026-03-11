@@ -487,13 +487,12 @@ export default function SatTracker() {
   const [fetchingPrice, setFetchingPrice]             = useState(false);
   const [stackerCount, setStackerCount]               = useState(1);
 
-  // ── Auth state listener + stacker count ──────────────────────────────────
+ // ── Auth state listener + stacker count ──────────────────────────────────
   useEffect(() => {
     const unsub = onAuthChange(async (user) => {
       if (user) {
         setGoogleUser(user);
         const data = await loadUserData(user.uid);
-
         // ── Restore user data ──
         if (data) {
           if (data.entries) setEntries(data.entries);
@@ -508,23 +507,18 @@ export default function SatTracker() {
         } else {
           setAuthStep("profile");
         }
-
         // ── Stacker count — increment only once per unique Google account ──
         try {
           const alreadyCounted = data && data._counted === true;
           if (!alreadyCounted) {
-            // Atomic increment — safe even if multiple users sign up simultaneously
-            const newCount = await incrementStackerCount();
+            await incrementStackerCount(user.uid);
             await saveUserData(user.uid, { _counted: true });
-            setStackerCount(newCount);
-          } else {
-            // Returning user — just read current count
-            const meta = await loadUserData("___meta___");
-            const currentCount = (meta && typeof meta.count === "number") ? meta.count : 1;
-            setStackerCount(currentCount);
           }
-        } } catch (err) { console.error("STACKER COUNT ERROR:", err); }
-
+          const currentCount = await getStackerCount();
+          setStackerCount(currentCount);
+        } catch (err) {
+          console.error("STACKER COUNT ERROR:", err);
+        }
       } else {
         setGoogleUser(null); setProfile(null); setEntries([]); setGoal(DEFAULT_GOAL);
         setAuthStep("google");
