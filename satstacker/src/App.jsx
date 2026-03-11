@@ -676,7 +676,7 @@ export default function SatTracker() {
             <img src={LOGO_SRC} alt="Sat Stacker Logo" style={{ width:44, height:44, borderRadius:11, objectFit:"cover", flexShrink:0 }}/>
             <div>
               <div style={{ fontSize:16, fontWeight:900, letterSpacing:-0.5, color:C.text }}>SAT STACKER</div>
-              <div style={{ fontSize:9, color:C.muted, letterSpacing:1.5, fontWeight:500 }}>BITCOIN TRACKER</div>
+              <div style={{ fontSize:9, color:C.muted, letterSpacing:1.5, fontWeight:500 }}>BITCOIN SAVINGS TRACKER</div>
             </div>
           </div>
           {/* Right: theme toggle + sign out */}
