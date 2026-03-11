@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { signInWithGoogle, logOut, saveUserData, loadUserData, onAuthChange } from "./firebase";
+import { signInWithGoogle, logOut, saveUserData, loadUserData, onAuthChange, incrementStackerCount } from "./firebase";
 
 const DEFAULT_GOAL = 100_000_000;
 const fmt    = (n) => parseInt(n).toLocaleString();
@@ -512,15 +512,15 @@ export default function SatTracker() {
         // ── Stacker count — increment only once per unique Google account ──
         try {
           const alreadyCounted = data && data._counted === true;
-          const meta = await loadUserData("___meta___");
-          const currentCount = (meta && typeof meta.count === "number") ? meta.count : 0;
-
           if (!alreadyCounted) {
-            const newCount = currentCount + 1;
-            await saveUserData("___meta___", { count: newCount });
+            // Atomic increment — safe even if multiple users sign up simultaneously
+            const newCount = await incrementStackerCount();
             await saveUserData(user.uid, { _counted: true });
             setStackerCount(newCount);
           } else {
+            // Returning user — just read current count
+            const meta = await loadUserData("___meta___");
+            const currentCount = (meta && typeof meta.count === "number") ? meta.count : 1;
             setStackerCount(currentCount);
           }
         } catch {}
@@ -676,7 +676,7 @@ export default function SatTracker() {
             <img src={LOGO_SRC} alt="Sat Stacker Logo" style={{ width:44, height:44, borderRadius:11, objectFit:"cover", flexShrink:0 }}/>
             <div>
               <div style={{ fontSize:16, fontWeight:900, letterSpacing:-0.5, color:C.text }}>SAT STACKER</div>
-              <div style={{ fontSize:9, color:C.muted, letterSpacing:1.5, fontWeight:500 }}>BITCOIN SAVINGS TRACKER</div>
+              <div style={{ fontSize:9, color:C.muted, letterSpacing:1.5, fontWeight:500 }}>BITCOIN TRACKER</div>
             </div>
           </div>
           {/* Right: theme toggle + sign out */}

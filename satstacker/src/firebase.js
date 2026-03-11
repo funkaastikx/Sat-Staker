@@ -1,6 +1,6 @@
 import { initializeApp } from "firebase/app";
 import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "firebase/auth";
-import { getFirestore, doc, setDoc, getDoc } from "firebase/firestore";
+import { getFirestore, doc, setDoc, getDoc, updateDoc, increment } from "firebase/firestore";
 
 const firebaseConfig = {
   apiKey: "AIzaSyCVTmFXu90lDsNhv-scTNCo0v-Jwb3I7BE",
@@ -29,3 +29,18 @@ export const loadUserData = async (uid) => {
 };
 
 export const onAuthChange = (callback) => onAuthStateChanged(auth, callback);
+
+// Atomically increment the global stacker count by 1
+// Uses Firestore's server-side increment so concurrent logins never clash
+export const incrementStackerCount = async () => {
+  const metaRef = doc(db, "users", "___meta___");
+  const snap = await getDoc(metaRef);
+  if (snap.exists()) {
+    await updateDoc(metaRef, { count: increment(1) });
+  } else {
+    await setDoc(metaRef, { count: 1 });
+  }
+  // Return the new count
+  const updated = await getDoc(metaRef);
+  return updated.data().count;
+};
