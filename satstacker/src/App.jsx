@@ -523,7 +523,7 @@ export default function SatTracker() {
             const currentCount = (meta && typeof meta.count === "number") ? meta.count : 1;
             setStackerCount(currentCount);
           }
-        } catch {}
+        } } catch (err) { console.error("STACKER COUNT ERROR:", err); }
 
       } else {
         setGoogleUser(null); setProfile(null); setEntries([]); setGoal(DEFAULT_GOAL);
