@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { signInWithGoogle, logOut, saveUserData, loadUserData, onAuthChange, incrementStackerCount } from "./firebase";
+import { signInWithGoogle, logOut, saveUserData, loadUserData, onAuthChange, incrementStackerCount, getStackerCount } from "./firebase";
 
 const DEFAULT_GOAL = 100_000_000;
 const fmt    = (n) => parseInt(n).toLocaleString();
