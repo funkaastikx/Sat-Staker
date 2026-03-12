@@ -32,7 +32,7 @@ export const onAuthChange = (callback) => onAuthStateChanged(auth, callback);
 
 // Increments the global stacker count — _counted flag in user doc is the gatekeeper
 export const incrementStackerCount = async () => {
-  const metaRef = doc(db, "users", "___meta___");
+  const metaRef = doc(db, "users", "_appMeta_");
   const metaSnap = await getDoc(metaRef);
   if (metaSnap.exists()) {
     await updateDoc(metaRef, { count: increment(1) });
@@ -45,7 +45,7 @@ export const incrementStackerCount = async () => {
 
 // Fetches the current stacker count without incrementing
 export const getStackerCount = async () => {
-  const metaRef = doc(db, "users", "___meta___");
+  const metaRef = doc(db, "users", "_appMeta_");
   const snap = await getDoc(metaRef);
   return snap.exists() ? snap.data().count : 1;
 };
