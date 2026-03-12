@@ -30,23 +30,20 @@ export const loadUserData = async (uid) => {
 
 export const onAuthChange = (callback) => onAuthStateChanged(auth, callback);
 
-// Only increments if this Google account has never signed in before
-export const incrementStackerCount = async (uid) => {
-  const userRef = doc(db, "users", uid);
-  const userSnap = await getDoc(userRef);
-
-  if (!userSnap.exists()) {
-    const metaRef = doc(db, "users", "___meta___");
-    const metaSnap = await getDoc(metaRef);
-    if (metaSnap.exists()) {
-      await updateDoc(metaRef, { count: increment(1) });
-    } else {
-      await setDoc(metaRef, { count: 1 });
-    }
+// Increments the global stacker count — _counted flag in user doc is the gatekeeper
+export const incrementStackerCount = async () => {
+  const metaRef = doc(db, "users", "___meta___");
+  const metaSnap = await getDoc(metaRef);
+  if (metaSnap.exists()) {
+    await updateDoc(metaRef, { count: increment(1) });
+  } else {
+    await setDoc(metaRef, { count: 1 });
   }
+  const updated = await getDoc(metaRef);
+  return updated.data().count;
 };
 
-// Fetches the current stacker count without incrementing!
+// Fetches the current stacker count without incrementing
 export const getStackerCount = async () => {
   const metaRef = doc(db, "users", "___meta___");
   const snap = await getDoc(metaRef);
