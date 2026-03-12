@@ -46,7 +46,7 @@ export const incrementStackerCount = async (uid) => {
   }
 };
 
-// Fetches the current stacker count without incrementing
+// Fetches the current stacker count without incrementing!
 export const getStackerCount = async () => {
   const metaRef = doc(db, "users", "___meta___");
   const snap = await getDoc(metaRef);
