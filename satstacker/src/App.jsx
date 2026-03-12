@@ -6,7 +6,7 @@ const fmt    = (n) => parseInt(n).toLocaleString();
 const fmtUsd = (n) => "$" + parseFloat(n).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 const satsToUsd = (sats, price) => (price ? (sats / 1e8) * price : null);
 
-// ── Theme palettes ────────────────────────────────────────────────────────────
+// ── Theme palettes ──────────────────────────────────────────────────────────
 const LIGHT = {
   bg: "#f0f2f5", card: "#ffffff", cardAlt: "#f8f9fb",
   gold: "#F7931A", goldDim: "#b86d10", goldLight: "#fff4e6", goldGlow: "rgba(247,147,26,0.15)",
