@@ -511,7 +511,7 @@ export default function SatTracker() {
         try {
           const alreadyCounted = data && data._counted === true;
           if (!alreadyCounted) {
-            await incrementStackerCount(user.uid);
+            await incrementStackerCount();
             await saveUserData(user.uid, { _counted: true });
           }
           const currentCount = await getStackerCount();
