@@ -4,6 +4,7 @@ This template provides a minimal setup to get React working in Vite with HMR and
 Making some slight edits
 This app has been working fine so far
 I need more money to stack sats personally though
+I am loving the progress though
 
 
 Currently, two official plugins are available:
