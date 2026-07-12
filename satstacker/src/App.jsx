@@ -548,11 +548,16 @@ export default function SatTracker() {
       const day   = String(d.getDate()).padStart(2,"0");
       const month = String(d.getMonth()+1).padStart(2,"0");
       const year  = d.getFullYear();
-      const res  = await fetch(`https://api.coingecko.com/api/v3/coins/bitcoin/history?date=${day}-${month}-${year}&localization=false`);
+      const res  = await fetch(`https://api.coingecko.com/api/v3/coins/bitcoin/history?date=${day}-${month}-${year}&localization=false`, {
+        headers: {
+          "x-cg-demo-api-key": "CG-2evEtFFFeRTYQGSDVapJRpEE"
+        }
+      });
       const data = await res.json();
       return data?.market_data?.current_price?.usd || btcPrice || null;
     } catch { return btcPrice || null; }
   };
+  
 
   // ── Persist helpers ────────────────────────────────────────────────────────
   const persist = async (next) => {
